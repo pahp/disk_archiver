@@ -3,32 +3,41 @@
 function do_ddrescue
 {
 	echo "Attempting ddrescue..."
-	if ! ddrescue -d -D -b 2048 -r4 -v /dev/${DEV} $ISONAME ${DISCNAME}.map
+	ddrescue -d -D -b 2048 -r4 -v /dev/${DEV} $ISONAME ${DISCNAME}.map
+	if ! ddrescue_success_test
 	then
 		echo "ddrescue unsuccessful -- trying harder! (direct mode)"
 
-		if ! ddrescue -d -b 2048 -r4 -v /dev/${DEV} $ISONAME ${DISCNAME}.map
+		ddrescue -d -b 2048 -r4 -v /dev/${DEV} $ISONAME ${DISCNAME}.map
+		if ! ddrescue_success_test
 		then
 			echo "direct mode still unsuccessful."
 			echo "I give up. :("
 			exit 1
 		else
-			echo "direct mode finished."
+			echo "direct mode finished successfully!"
 		fi
 	else
-		echo "ddrescue (non-direct) finished."
+		echo "ddrescue (non-direct) finished successfully!"
 	fi
 
+}
+
+function ddrescue_success_test
+{
 	# test to see if ddrescue got everything
 	if ! ddrescuelog -D ${DISCNAME}.map
 	then
-		echo "ddrescue was not able to fully recover this disc. Quitting."
-		exit 1
+		echo "ddrescue was not able to fully recover this disc."
+		return 1
 	else
 		echo "ddrescue was able to fully recover this disc! Deleting map."
 		ddrescuelog -d ${DISCNAME}.map
+		return 0
 	fi
+
 }
+
 
 function check_and_compress
 {
